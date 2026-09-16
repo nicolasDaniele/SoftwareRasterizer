@@ -28,3 +28,15 @@ void Framebuffer::SaveToPPM(const std::string& path) const
         file.put(static_cast<char>(c.b));
     }
 }
+
+void Framebuffer::WriteRGBA8(std::uint8_t* dest) const
+{
+    for (size_t i = 0; i < m_colorBuffer.size(); ++i)
+    {
+        const Color& c = m_colorBuffer[i];
+        dest[i * 4 + 0] = c.r;
+        dest[i * 4 + 1] = c.g;
+        dest[i * 4 + 2] = c.b;
+        dest[i * 4 + 3] = 255;
+    }
+}
