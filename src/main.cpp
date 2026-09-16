@@ -10,7 +10,7 @@ int main()
     const unsigned int height = 600;
 
     Framebuffer fb(width, height);
-    Window window(width, height, "Software Rasterizer");
+    Window window(width, height, "Rasterizer 3000");
 
     Mesh cube = MeshFactory::CreateCube(2.0f);
 
