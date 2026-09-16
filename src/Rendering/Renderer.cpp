@@ -1,5 +1,6 @@
 #include "Rendering/Renderer.h"
 #include "Rendering/Rasterizer.h"
+#include "Rendering/Clipping.h"
 #include <algorithm>
 
 void Renderer::RenderMesh(
@@ -32,20 +33,36 @@ void Renderer::RenderMesh(
         if (backfaceCulling && Vec3::Dot(worldNormal, toCamera) <= 0.0f)
             continue;
 
-        // Transform the three vertices: local -> clip space -> perspective divide -> screen.
+        // Transform the three vertices into CLIP space - MVP applied, but
+        // NOT yet divided by w.
         uint32_t indices[3] = { tri.i0, tri.i1, tri.i2 };
-        ScreenVertex screenVerts[3];
+        Vec4 clipVerts[3];
         for (int i = 0; i < 3; ++i)
-        {
-            Vec4 clipSpace = mvp * Vec4(mesh.vertices[indices[i]].position, 1.0f);
-            Vec3 ndc = clipSpace.PerspectiveDivide();
-            screenVerts[i] = NdcToScreen(ndc, fb.GetWidth(), fb.GetHeight());
-        }
+            clipVerts[i] = mvp * Vec4(mesh.vertices[indices[i]].position, 1.0f);
+
+        // Clip against the near plane BEFORE the perspective divide. A vertex
+        // behind (or too close to) the camera would otherwise produce a
+        // negative or near-zero w, and dividing by that blows the triangle up
+        // across the screen instead of correctly trimming it away.
+        Vec4 clippedTriangles[2][3];
+        int triangleCount = ClipTriangleNearPlane(
+            clipVerts[0], clipVerts[1], clipVerts[2], camera.GetNearPlane(), clippedTriangles);
 
         // Flat shading: how directly the face points away from the light.
+        // Computed once per ORIGINAL triangle and reused for however many
+        // triangles clipping produces - it's the same face, same color.
         float intensity = std::max(0.0f, Vec3::Dot(worldNormal, -lightDirNormalized));
         Color color = Color::FromIntensity(intensity);
 
-        Rasterizer::DrawTriangle(fb, screenVerts[0], screenVerts[1], screenVerts[2], color);
+        for (int t = 0; t < triangleCount; ++t)
+        {
+            ScreenVertex screenVerts[3];
+            for (int i = 0; i < 3; ++i)
+            {
+                Vec3 ndc = clippedTriangles[t][i].PerspectiveDivide();
+                screenVerts[i] = NdcToScreen(ndc, fb.GetWidth(), fb.GetHeight());
+            }
+            Rasterizer::DrawTriangle(fb, screenVerts[0], screenVerts[1], screenVerts[2], color);
+        }
     }
 }

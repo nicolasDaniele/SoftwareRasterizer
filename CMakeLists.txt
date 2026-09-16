@@ -38,6 +38,7 @@ add_library(rasterizer_lib STATIC
     ${SRC_ROOT}/Core/Camera.cpp
     ${SRC_ROOT}/Rendering/Rasterizer.cpp
     ${SRC_ROOT}/Rendering/Renderer.cpp
+    ${SRC_ROOT}/Rendering/Clipping.cpp
 )
 target_include_directories(rasterizer_lib PUBLIC ${SRC_ROOT})
 target_compile_options(rasterizer_lib PRIVATE ${PROJECT_WARNING_FLAGS})
