@@ -11,6 +11,7 @@ public:
     Mat4 GetViewMatrix() const;
     Mat4 GetProjectionMatrix() const;
     Vec3 GetPosition() const { return m_position; }
+    float GetNearPlane() const { return m_near; }
 
 private:
     Vec3 m_position;
