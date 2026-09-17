@@ -71,6 +71,7 @@ necesarias junto al `.exe` automáticamente.
 | Tecla | Acción |
 |---|---|
 | ← / → | Rota el cubo sobre el eje Y |
+| ↑ / ↓ | Traslada el cubo en el eje Y |
 | Cerrar ventana | Termina el programa |
 
 ## Decisiones de diseño
